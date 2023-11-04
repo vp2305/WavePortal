@@ -1,0 +1,89 @@
+Notes:
+HRE = Hardhat Runtime Environment
+
+----Blockchain----
+1. Block number # 1 : It's the official 1st block in the block chain it's also called the Genesis Block or Block0 it's the very first block on which other additional blocks will be added.
+ 
+2. Transaction Hash or Transaction ID it's a unique string of characters that is given to every transaction that is verified and added to the blockchain.
+
+3. Gas : It refers to the fee required to conduct a transaction on Ethereum successfully. 
+
+----Contracts Information----
+- We are manually calling our functions! Just like we would any normal API.
+
+Simulating another user calling our wave function
+
+const secondWaveTxn = await waveContract.connect(randomPerson).wave();
+await secondWaveTxn.wait()
+
+Our functions become available to be called on the blockchain because we used that special "PUBLIC" keyword on our functions.
+
+----Deploying----
+QuickNode can be used to deploy real Ethereum blockchain
+
+When we deploy our contract, we need to tell all those miners, "hey, this is a new smart contract, please add my smart contract to the blockchain and then tell everyone else about it as well".
+
+----Transaction----
+So, when we want to perform an action on the Ethereum blockchain we call it a transaction.
+
+For example, sending someone ETH is a transaction. Doing something that updates a variable in our contract is also considered a transaction.
+
+So when we call wave and it does totalWaves += 1, that's a transaction! Deploying a smart contract is also a transaction.
+
+----Miners----
+Remember, the blockchain has no owner. It's just a bunch of computers around the world run by miners that have a copy of the blockchain.
+
+----QuickNode----
+QuickNode essentially helps us ---broadcast--- our contract creation transaction so that it can be picked up by miners as quickly as possible. Once the transaction is mined, it is then broadcasted to the blockchain as a legit transaction. From there, everyone updates their copy of the blockchain.
+
+We're not going to be deploying to the "Ethereum mainnet" until the very end. Why? Because it costs real $ and it's not worth messing up! We're going to start with a "testnet" which is a clone of "mainnet" but it uses fake $ so we can test stuff out as much as we want. But, it's important to know that testnets are run by actual miners and mimic real-world scenarios.
+
+----Alchemy----
+Apparently can use https://dashboard.alchemy.com/ to give us fake eth.
+
+----Fake ETH Goerli----
+Chainlink	    https://faucets.chain.link/goerli	0.1	    None
+Official Goerli	https://goerlifaucet.com	        0.25	24 hrs
+MyCrypto	    https://app.mycrypto.com/faucet 	0.01	None
+
+----DotEnv----
+require("dotenv").config();
+
+---- Frontend -> Contract ----
+ethers is a library that helps our frontend talk to our contract. Be sure to import it at the top using import { ethers } from "ethers";
+A "Provider" is what we use to actually talk to Ethereum nodes.
+
+A Signer in ethers is an abstraction of an Ethereum Account, which can be used to sign messages and transactions and send signed transactions to the Ethereum Network to execute state changing operations.
+https://docs.ethers.org/v5/api/signer/#signers?utm_source=buildspace.so&utm_medium=buildspace_project
+
+For example, a Signer from MetaMask can send transactions and sign messages but cannot sign a transaction (without broadcasting it).
+
+The most common Signers you will encounter are:
+
+Wallet, which is a class which knows its private key and can execute any operations with it
+JsonRpcSigner, which is connected to a JsonRpcProvider (or sub-class) and is acquired using getSigner
+
+---- Send money ----
+(msg.sender).call{value: prizeAmount}("") is the magic line where we send money :). The syntax is a little weird! Notice how we pass it prizeAmount!
+
+---- Non payable ----
+Error: non-payable constructor cannot override value
+What this is saying is, our contract isn't allowed to pay people right now! This is quick fix, we need to add the keyword payable to our constructor in WavePortal.sol
+
+---- Redeploy ----
+So, now that we've updated our contract we need to do a few things:
+
+1. We need to deploy it again.
+
+2. We need to update the contract address on our frontend.
+
+3. We need to update the abi file on our frontend. 
+
+---- Randomize Smart Contract ----
+Here, I take two numbers given to me by Solidity, block.difficulty and block.timestamp and combine them to create a random number. 
+block.difficulty tells miners how hard the block will be to mine based on the transactions in the block. 
+Blocks get harder for a # of reasons, but, mainly they get harder when there are more transactions in the block (some miners prefer easier blocks, but, these payout less). block.timestamp is just the Unix timestamp that the block is being processed.
+
+These #s are pretty random. But, technically, both block.difficulty and block.timestamp could be controlled by a sophisticated attacker. 
+
+To make this harder, I create a variable seed that will essentially change every time a user sends a new wave. So, I combine all three of these variables to generate a new random seed. Then I just do % 100 which will make sure the number is brought down to a range between 0 - 99.
